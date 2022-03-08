@@ -1,0 +1,7 @@
+#!/bin/bash
+
+export ORACLE_HOME={{ oracle_home }}
+export PATH=$ORACLE_HOME/bin:$PATH
+export LD_LIBRARY_PATH=$ORACLE_HOME/lib:$LD_LIBRARY_PATH
+cd {{ tmp_patch_dir }}/{{ patch_no }} || ( echo "Failed to cd to patch dir" && exit 1 )
+$ORACLE_HOME/OPatch/opatch apply -silent 2>&1 | tee "$(date '+/tmp/apply_patch_{{ patch_no }}%y%m%d_%H%M%S.log')"

@@ -1,0 +1,39 @@
+---
+# tasks file for oracle-db-install
+- name: Validate Oracle home directory
+  stat:
+    path: "{{ oracle_home }}"
+    get_checksum: false
+    get_mime: false
+  register: st
+  failed_when: not st.stat.exists or not st.stat.isdir
+
+- name: Validate Oracle home directory is not empty
+  find:
+    paths: [ "{{ oracle_home }}" ]
+    patterns: ["*"]
+  register: files_found
+  when: st.stat.exists
+  failed_when: files_found.matched == 0
+
+- name: Validate the opatch archive
+  stat:
+    path: "{{ archive_location }}/{{ opatch_archive }}"
+    get_checksum: false
+    get_mime: false
+  register: st
+  when: opatch_archive is defined
+  failed_when: opatch_archive is defined and not st.stat.exists
+
+- name: Update opatch
+  unarchive:
+    src: "{{ archive_location }}/{{ opatch_archive }}"
+    dest: "{{ oracle_home }}"
+    remote_src: yes
+
+- name: Apply patches
+  include_tasks: apply_patch.yml
+  vars:
+    patch_archive: "{{ item }}"
+  with_items:
+    - "{{ apply_patches }}"

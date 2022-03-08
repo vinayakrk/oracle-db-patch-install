@@ -1,0 +1,21 @@
+---
+# defaults file for oracle-db-install
+db_owner: oracle
+db_group: oinstall
+dba_group: dba
+oper_group: oper
+backupdba_group: backupdba
+dgdba_group: dgdba
+kmdba_group: kmdba
+racdba_group: racdba
+archive_location: /orasoft/archive
+opatch_archive: p6880880_190000_Linux-x86-64.zip
+apply_patches: 
+  - p33515361_190000_Linux-x86-64.zip
+  - p33561310_190000_Linux-x86-64.zip
+oracle_base: /u01/app/oracle
+oracle_home: "{{ oracle_base }}/product/19.0.0.0/db_1"
+oracle_inv_loc: /u01/app/oraInventory
+dt: "{{ ansible_date_time.iso8601_basic }}"
+tmp_dir: /tmp
+tmp_patch_dir: "{{ tmp_dir }}/patch_{{ dt }}"

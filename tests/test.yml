@@ -1,0 +1,4 @@
+---
+- hosts: "*"
+  roles:
+    - oracle-db-patch-install

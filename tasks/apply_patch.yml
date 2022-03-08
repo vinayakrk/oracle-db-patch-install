@@ -1,0 +1,52 @@
+---
+- name : Apply patch
+  block:
+
+    - name: Validate the software archive
+      stat:
+        path: "{{ archive_location }}/{{ patch_archive }}"
+        get_checksum: false
+        get_mime: false
+      register: st
+      failed_when: not st.stat.exists
+    
+    - name: Create temp patch dir
+      file:
+        path: "{{ tmp_patch_dir }}"
+        state: directory
+        owner: "{{ db_owner }}"
+        group: "{{ db_group }}"
+        mode: '0744'
+
+    - name: Unzip patch into temporary directory
+      unarchive:
+        src: "{{ archive_location }}/{{ patch_archive }}"
+        dest: "{{ tmp_patch_dir }}"
+        remote_src: yes
+      no_log: true
+
+    - name: parse the patch number
+      set_fact: patch_no='{{ patch_archive.split("_")[0].replace('p','') }}'
+
+    - name: Define patch_script
+      set_fact: patch_apply_script="/tmp/patch_apply_{{ patch_no }}_{{ dt }}.sh"
+
+    - name: Create the patch apply script
+      template:
+        src: "apply_patch.j2"
+        dest: "{{ patch_apply_script }}"
+        owner: "{{ db_owner }}"
+        group: "{{ db_group }}"
+        mode: "0744"
+
+    - name: Apply patch
+      command: "{{ patch_apply_script }}"
+      register: install_status
+      failed_when: install_status.rc not in [0,6]
+
+  always:
+    - name: Remove patch directory
+      file:
+        path: "{{ tmp_patch_dir }}"
+        state: absent
+      when: tmp_patch_dir is defined

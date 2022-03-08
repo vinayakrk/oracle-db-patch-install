@@ -1,0 +1,29 @@
+#!/bin/bash
+
+{%if ansible_distribution_major_version == "8" %}
+export CV_ASSUME_DISTID=OL7
+{%endif %}
+
+RI={{ oracle_home }}/runInstaller
+
+if [[ ! -x $RI ]]; then
+    echo "$RI not found or is not executable"
+    exit 1
+fi
+
+$RI \
+    -silent \
+    -noconfig \
+    -waitForCompletion \
+    -ignorePrereqFailure \
+    oracle.install.option=INSTALL_DB_SWONLY \
+    UNIX_GROUP_NAME=oinstall \
+    INVENTORY_LOCATION={{ oracle_inv_loc }} \
+    ORACLE_HOME={{ oracle_home }} \
+    ORACLE_BASE={{ oracle_base }} \
+    oracle.install.db.InstallEdition=EE \
+    oracle.install.db.OSDBA_GROUP={{ dba_group }} \
+    oracle.install.db.OSBACKUPDBA_GROUP={{ backupdba_group }} \
+    oracle.install.db.OSDGDBA_GROUP={{ dgdba_group }} \
+    oracle.install.db.OSKMDBA_GROUP={{ kmdba_group }} \
+    oracle.install.db.OSRACDBA_GROUP={{ racdba_group }} | tee {{ install_log }}
